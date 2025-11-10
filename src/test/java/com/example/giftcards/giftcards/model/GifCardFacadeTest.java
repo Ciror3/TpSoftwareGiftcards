@@ -41,14 +41,14 @@ public class GifCardFacadeTest {
     }
 
     @Test public void userCannotCheckOnAlienCard() {
-        GifCardFacade facade = newFacade();
+        GiftCardFacade facade = newFacade();
         UUID token = facade.login( "Bob", "BobPass" );
 
         assertThrows( RuntimeException.class, () -> facade.balance( token, "GC1" ) );
     }
 
     @Test public void userCanRedeeemACard() {
-        GifCardFacade facade = newFacade();
+        GiftCardFacade facade = newFacade();
         UUID token = facade.login( "Bob", "BobPass" );
 
         facade.redeem( token, "GC1" );
@@ -56,7 +56,7 @@ public class GifCardFacadeTest {
     }
 
     @Test public void userCanRedeeemASecondCard() {
-        GifCardFacade facade = newFacade();
+        GiftCardFacade facade = newFacade();
         UUID token = facade.login( "Bob", "BobPass" );
 
         facade.redeem( token, "GC1" );
@@ -67,7 +67,7 @@ public class GifCardFacadeTest {
     }
 
     @Test public void multipleUsersCanRedeeemACard() {
-        GifCardFacade facade = newFacade();
+        GiftCardFacade facade = newFacade();
         UUID bobsToken = facade.login( "Bob", "BobPass" );
         UUID kevinsToken = facade.login( "Kevin", "KevPass" );
 
@@ -88,7 +88,7 @@ public class GifCardFacadeTest {
     }
 
     @Test public void merchantCanChargeARedeemedCard() {
-        GifCardFacade facade = newFacade();
+        GiftCardFacade facade = newFacade();
         UUID token = facade.login( "Bob", "BobPass" );
 
         facade.redeem( token, "GC1" );
@@ -98,7 +98,7 @@ public class GifCardFacadeTest {
     }
 
     @Test public void merchantCannotOverchargeACard() {
-        GifCardFacade facade = newFacade();
+        GiftCardFacade facade = newFacade();
         UUID token = facade.login( "Bob", "BobPass" );
 
         facade.redeem( token, "GC1" );
@@ -106,7 +106,7 @@ public class GifCardFacadeTest {
     }
 
     @Test public void userCanCheckHisEmptyCharges() {
-        GifCardFacade facade = newFacade();
+        GiftCardFacade facade = newFacade();
         UUID token = facade.login( "Bob", "BobPass" );
 
         facade.redeem( token, "GC1" );
@@ -115,7 +115,7 @@ public class GifCardFacadeTest {
     }
 
     @Test public void userCanCheckHisCharges() {
-        GifCardFacade facade = newFacade();
+        GiftCardFacade facade = newFacade();
         UUID token = facade.login( "Bob", "BobPass" );
 
         facade.redeem( token, "GC1" );
@@ -125,7 +125,7 @@ public class GifCardFacadeTest {
     }
 
     @Test public void userCannotCheckOthersCharges() {
-        GifCardFacade facade = newFacade();
+        GiftCardFacade facade = newFacade();
         facade.redeem( facade.login( "Bob", "BobPass" ), "GC1" );
 
         UUID token = facade.login( "Kevin", "KevPass" );
@@ -134,7 +134,7 @@ public class GifCardFacadeTest {
     }
 
     @Test public void tokenExpires() {
-        GifCardFacade facade = newFacade( new Clock( ){
+        GiftCardFacade facade = newFacade(new Clock( ){
             Iterator<LocalDateTime> it = List.of( LocalDateTime.now(), LocalDateTime.now().plusMinutes( 16 ) ).iterator();
             public LocalDateTime now() {
                 return it.next();
@@ -146,9 +146,9 @@ public class GifCardFacadeTest {
         assertThrows( RuntimeException.class, () -> facade.redeem( token, "GC1" ) );
     }
 
-    private static GifCardFacade newFacade() {return newFacade( new Clock() );    }
-    private static GifCardFacade newFacade( Clock  clock ) {
-        return new GifCardFacade( new ArrayList( List.of( new GiftCard( "GC1", 10 ), new GiftCard( "GC2", 5 ) ) ),
+    private static GiftCardFacade newFacade() {return newFacade( new Clock() );    }
+    private static GiftCardFacade newFacade(Clock  clock ) {
+        return new GiftCardFacade( new ArrayList( List.of( new GiftCard( "GC1", 10 ), new GiftCard( "GC2", 5 ) ) ),
                                   new HashMap( Map.of( "Bob", "BobPass", "Kevin", "KevPass" ) ),
                                   new ArrayList<>( List.of( "M1" ) ),
                                   clock );

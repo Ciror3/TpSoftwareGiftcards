@@ -1,14 +1,12 @@
 package com.example.giftcards.giftcards.model;
 
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class GifCardFacade {
+public class GiftCardFacade {
     public static final String InvalidUser = "InvalidUser";
     public static final String InvalidMerchant = "InvalidMerchant";
     public static final String InvalidToken = "InvalidToken";
@@ -20,7 +18,7 @@ public class GifCardFacade {
 
     private Map<UUID, UserSession> sessions = new HashMap();
 
-    public GifCardFacade( List<GiftCard> cards, Map<String, String> users, List<String> merchants, Clock clock ) {
+    public GiftCardFacade(List<GiftCard> cards, Map<String, String> users, List<String> merchants, Clock clock ) {
         this.cards = cards.stream().collect( Collectors.toMap( each -> each.id(), each -> each ));
         this.users = users;
         this.merchants = merchants;
