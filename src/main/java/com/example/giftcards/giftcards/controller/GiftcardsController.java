@@ -31,6 +31,10 @@ public class GiftcardsController {
         );
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleIlegalArguments(RuntimeException ex) {
+        return ResponseEntity.internalServerError().body(ex.getMessage());
+    }
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestParam String user, @RequestParam String pass ) {
@@ -43,7 +47,33 @@ public class GiftcardsController {
     @PostMapping("/{cardId}/redeem")
     public ResponseEntity<String> redeemCard(@RequestHeader("Authorization") String header, @PathVariable String cardId ) {
         giftcardsSystemFacade.redeem(extractToken(header), cardId);
-        return ResponseEntity.ok().build(); //No sé si deberia devolver algo más
+        return ResponseEntity.ok("Card redeemed successfully");
+    }
+
+
+////    GET /api/giftcards/{cardId}/balance
+////    Consulta saldo de la tarjeta
+    @GetMapping("/{cardId}/balance")
+    public ResponseEntity<Map<String, Object>> balance( @RequestHeader("Authorization") String header, @PathVariable String cardId ) {
+        return ResponseEntity.ok(Map.of("cardId", cardId,
+                                        "balance", giftcardsSystemFacade.balance(extractToken(header), cardId) ));
+    }
+
+////    GET /api/giftcards/{cardId}/details
+////    Lista los movimientos de la tarjeta
+    @GetMapping("/{cardId}/details")
+    public ResponseEntity<Map<String, Object>> details( @RequestHeader("Authorization") String tokenHeader, @PathVariable String cardId ) {
+        return ResponseEntity.ok(Map.of( "cardId", cardId,
+                                        "details", giftcardsSystemFacade.details(extractToken(tokenHeader), cardId) ));
+    }
+
+////    POST /api/giftcards/{cardId}/charge?merchant=MerchantCode&amount=anAmount&description=aDescriptio
+////     Un merchant hace un cargo sobre la tarjeta
+    @PostMapping("/{cardId}/charge")
+    public ResponseEntity<String> charge( @RequestParam String merchant, @RequestParam int amount, @RequestParam String description, @PathVariable String cardId ) {
+        giftcardsSystemFacade.charge(merchant, cardId, amount, description);
+
+        return ResponseEntity.ok("Charge successful");
     }
 
     private UUID extractToken(String authHeader) {
@@ -54,15 +84,4 @@ public class GiftcardsController {
         return UUID.fromString(tokenString);
     }
 
-////    GET /api/giftcards/{cardId}/balance
-////    Consulta saldo de la tarjeta
-//    @GetMapping("/{cardId}/balance") public ResponseEntity<Map<String, Object>> balance( @RequestHeader("Authorization") String header, @PathVariable String cardId ) {
-//
-////    GET /api/giftcards/{cardId}/details
-////    Lista los movimientos de la tarjeta
-//    @GetMapping("/{cardId}/details") public ResponseEntity<Map<String, Object>> details( @RequestHeader("Authorization") String tokenHeader, @PathVariable String cardId ) {
-//
-////    POST /api/giftcards/{cardId}/charge?merchant=MerchantCode&amount=anAmount&description=aDescriptio
-////     Un merchant hace un cargo sobre la tarjeta
-//    @PostMapping("/{cardId}/charge") public ResponseEntity<String> charge( @RequestParam String merchant, @RequestParam int amount, @RequestParam String description, @PathVariable String cardId ) {
 }
