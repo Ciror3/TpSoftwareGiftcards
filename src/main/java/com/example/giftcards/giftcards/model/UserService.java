@@ -31,6 +31,7 @@ public class UserService {
         return repository.save(userVault);
     }
 
+
     public void delete(Long id) {
         repository.deleteById(id);
     }
