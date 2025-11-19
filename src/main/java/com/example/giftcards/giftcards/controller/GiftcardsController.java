@@ -6,6 +6,7 @@ package com.example.giftcards.giftcards.controller;
 import com.example.giftcards.giftcards.model.Clock;
 import com.example.giftcards.giftcards.model.GiftCardFacade;
 import com.example.giftcards.giftcards.model.GiftCard;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,19 +18,21 @@ import java.util.*;
 public class GiftcardsController {
     //    POST /api/giftcards/login?user=aUser&pass=aPassword
 //    Devuelve un token válido
-    private GiftCardFacade giftcardsSystemFacade = newFacade();
+//    private GiftCardFacade giftcardsSystemFacade = newFacade();
+//
+//    private static GiftCardFacade newFacade() {
+//        return newFacade(new Clock());
+//    }
+//    public static GiftCardFacade newFacade(Clock clock){
+//        return new GiftCardFacade(
+//                new ArrayList<>(List.of(new GiftCard("GC1",10))),
+//                new HashMap<>(Map.of("Johnny","jojo")),
+//                new ArrayList<>(List.of("M1")),
+//                clock
+//        );
+//    }
 
-    private static GiftCardFacade newFacade() {
-        return newFacade(new Clock());
-    }
-    public static GiftCardFacade newFacade(Clock clock){
-        return new GiftCardFacade(
-                new ArrayList<>(List.of(new GiftCard("GC1",10))),
-                new HashMap<>(Map.of("Johnny","jojo")),
-                new ArrayList<>(List.of("M1")),
-                clock
-        );
-    }
+    @Autowired private GiftCardFacade giftcardsSystemFacade;
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleIlegalArguments(RuntimeException ex) {
@@ -80,7 +83,7 @@ public class GiftcardsController {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("InvalidToken");
         }
-        String tokenString = authHeader.substring(7); // Remueve "Bearer "
+        String tokenString = authHeader.substring(7);
         return UUID.fromString(tokenString);
     }
 

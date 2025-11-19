@@ -1,14 +1,12 @@
 package com.example.giftcards.giftcards.controller;
 
-import com.example.giftcards.giftcards.model.GiftCardFacade;
+import com.example.giftcards.giftcards.model.*;
+import org.junit.jupiter.api.BeforeEach;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -18,26 +16,40 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath; // ✅ IMPORT CORRECTO
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-//@SpringBootTest
-//@AutoConfigureMockMvc
-@WebMvcTest(GiftcardsController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+//@WebMvcTest(GiftcardsController.class)
 class GiftcardsControllerTest {
 
     @Autowired private MockMvc mockMvc;
 
-    @MockBean
-    private GiftCardFacade giftcardsSystemFacade;
+    @Autowired private GiftCardService giftCardService;
+    @Autowired private UserService userService;
+    @Autowired private MerchantService merchantService;
+
 
     private final String user = "Johnny";
     private final String password = "jojo";
 
+    @BeforeEach
+    public void setUp() {
+        cleanAndLoadData();
+    }
+
+    private void cleanAndLoadData() {
+        giftCardService.findAll().forEach(giftCardService::delete);
+        userService.findAll().forEach(userService::delete);
+
+        userService.save(new UserVault(user, password));
+        merchantService.save(new Merchant("M1", "Starbucks"));
+        giftCardService.save(new GiftCard("GC1", 10));
+    }
+
     @Test
     void test01LoginCorrectly() throws Exception {
         String token = loginAndGetToken(user, password);
-
-        // opcional: comprobar que el token es un UUID válido
         assertDoesNotThrow(() -> UUID.fromString(token));
     }
 
@@ -54,7 +66,6 @@ class GiftcardsControllerTest {
     @Test
     void test03RedeemCorrectly() throws Exception {
         String token = loginAndGetToken(user, password);
-
         redeemGC1WithToken(token);
     }
 
@@ -80,7 +91,7 @@ class GiftcardsControllerTest {
         String token = loginAndGetToken(user, password);
 
         mockMvc.perform(
-                        post("/GC2/redeem")
+                        post("/GC1234/redeem")
                                 .header("Authorization", "Bearer " + token)
                 )
                 .andExpect(status().is(500));
@@ -133,20 +144,43 @@ class GiftcardsControllerTest {
     //11 token, 12 tarjeta no conocida, 13 tarjeta no redemida o redimida por otro.
 
     @Test
-    void test14ChargeCorrectly() throws Exception { //YA INVENTARÉ UN MEJOR NOMBRE DE TEST :) QUIERO MIMIR
+    void test14ChargeCorrectly() throws Exception {
         String token = loginAndGetToken(user, password);
         redeemGC1WithToken(token);
         mockMvc.perform(
                 post("/GC1/charge")
                         .param("merchant", "M1")
-                        .param("amount", "10")
+                        .param("amount", "5")
                         .param("description", "Café")
                         .param("cardId", "GC1")
         ).andExpect(status().is(200));
     }
 
-    // Test de error cuando supera el max del monto, mal algun otro parametro.
+    @Test
+    void test15ChargeWithInvalidMerchant() throws Exception {
+        String token = loginAndGetToken(user, password);
+        redeemGC1WithToken(token);
 
+        mockMvc.perform(
+                post("/GC1/charge")
+                        .param("merchant", "MX")
+                        .param("amount", "5")
+                        .param("description", "Café")
+        ).andExpect(status().is(500));
+    }
+
+    @Test
+    void test16ChargeOverBalance() throws Exception {
+        String token = loginAndGetToken(user, password);
+        redeemGC1WithToken(token);
+
+        mockMvc.perform(
+                post("/GC1/charge")
+                        .param("merchant", "M1")
+                        .param("amount", "100")  // ← Más del balance
+                        .param("description", "Café")
+        ).andExpect(status().is(500));
+    }
 
 
 

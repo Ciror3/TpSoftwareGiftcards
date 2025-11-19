@@ -4,7 +4,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.junit.jupiter.api.BeforeEach;
 
+import java.util.Random;
+import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,11 +17,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DataJpaTest
 @Import(GiftCardService.class)
 public class GiftCardServiceTest {
+    Random rnd = new Random(Instant.now().getEpochSecond());
     @Autowired
     protected GiftCardService service;
 
+    @BeforeEach
+    public void setUp() {
+        service.findAll().forEach(service::delete);
+    }
+
     protected GiftCard newGiftCard() {
-        return new GiftCard("GC1",100);
+        return new GiftCard("GC1" + rnd.nextInt(10000),100);
     }
 
     protected GiftCard savedGiftCard() {

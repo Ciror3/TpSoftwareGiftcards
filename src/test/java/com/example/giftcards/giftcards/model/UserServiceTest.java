@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Instant;
 import java.util.List;
 import java.util.Random;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -20,6 +22,11 @@ class UserServiceTest {
     Random rnd = new Random( Instant.now().getEpochSecond() );
 
     @Autowired protected UserService service;
+
+    @BeforeEach
+    public void setUp() {
+        service.findAll().forEach(service::delete);
+    }
 
     protected UserVault newSample() {
         return new UserVault( "Johnny" + rnd.nextInt() , "tusk" );

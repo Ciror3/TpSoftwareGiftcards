@@ -1,33 +1,43 @@
 package com.example.giftcards.giftcards.model;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Service
 public class GiftCardFacade {
     public static final String InvalidUser = "InvalidUser";
     public static final String InvalidMerchant = "InvalidMerchant";
     public static final String InvalidToken = "InvalidToken";
 
-    private Map<String, String> users;
-    private Map<String,GiftCard> cards;
-    private List<String>  merchants;
-    private Clock clock;
+    // Paso esto a persistencia
+//    private Map<String, String> users;
+//    private Map<String,GiftCard> cards;
+//    private List<String>  merchants;
+//    private Clock clock;
 
+    @Autowired private UserService userService;
+    @Autowired private GiftCardService giftCardService;
+    @Autowired private MerchantService merchantService;
+    @Autowired private Clock clock;
+
+    //Esto si queda en memoria porque la sesiones son temporales
     private Map<UUID, UserSession> sessions = new HashMap();
 
-    public GiftCardFacade(List<GiftCard> cards, Map<String, String> users, List<String> merchants, Clock clock ) {
-        this.cards = cards.stream().collect( Collectors.toMap( each -> each.id(), each -> each ));
-        this.users = users;
-        this.merchants = merchants;
-        this.clock = clock;
-    }
+//    public GiftCardFacade(List<GiftCard> cards, Map<String, String> users, List<String> merchants, Clock clock ) {
+//        this.cards = cards.stream().collect( Collectors.toMap( each -> each.id(), each -> each ));
+//        this.users = users;
+//        this.merchants = merchants;
+//        this.clock = clock;
+//    }
 
     public UUID login( String userKey, String pass ) {
-        if ( !users.computeIfAbsent( userKey, key -> { throw new RuntimeException( InvalidUser ); } )
-                .equals( pass ) ) {
+        if ( !userService.authenticate(userKey, pass)) {
             throw new RuntimeException( InvalidUser );
         }
 
@@ -37,7 +47,9 @@ public class GiftCardFacade {
     }
 
     public void redeem( UUID token, String cardId ) {
-        cards.get( cardId ).redeem( findUser( token ) );
+        GiftCard card = giftCardService.getById(cardId);
+        card.redeem( findUser( token ));
+        giftCardService.save(card);
     }
 
     public int balance( UUID token, String cardId ) {
@@ -45,9 +57,11 @@ public class GiftCardFacade {
     }
 
     public void charge( String merchantKey, String cardId, int amount, String description ) {
-        if ( !merchants.contains( merchantKey ) ) throw new RuntimeException( InvalidMerchant );
+        if ( !merchantService.exists( merchantKey ) ) throw new RuntimeException( InvalidMerchant );
 
-        cards.get( cardId ).charge( amount, description );
+        GiftCard card = giftCardService.getById( cardId );
+        card.charge( amount, description );
+        giftCardService.save(card);
     }
 
     public List<String> details( UUID token, String cardId ) {
@@ -55,7 +69,7 @@ public class GiftCardFacade {
     }
 
     private GiftCard ownedCard( UUID token, String cardId ) {
-        GiftCard card = cards.get( cardId );
+        GiftCard card = giftCardService.getById( cardId );
         if ( !card.isOwnedBy( findUser( token ) ) ) throw new RuntimeException( InvalidToken );
         return card;
     }
