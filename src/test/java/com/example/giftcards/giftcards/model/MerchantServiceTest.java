@@ -11,37 +11,27 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @Import(MerchantService.class)
-public class MerchantServiceTest {
+public class MerchantServiceTest extends ModelServiceTest<Merchant, String, MerchantService> {
+
     @Autowired
-    protected MerchantService service;
+    protected MerchantService service; // viene también del padre, pero lo dejamos explícito
 
-    protected Merchant newMerchant() {
-        return new Merchant("M12","MerchantApi");
-    }
-
-    protected Merchant savedMerchant() {
-        return service.save(newMerchant());
-    }
-
-    @Test
-    public void testEntitySave() {
-        Merchant model = newMerchant();
-        Merchant retrieved = service.save( model );
-        assertNotNull( retrieved.getCode() );
-        assertNotNull( model.getCode() );
-        assertEquals( retrieved, model );
+    @Override
+    protected Merchant newSample() {
+        return new Merchant("M12", "MerchantApi");
     }
 
     @Test
     public void testExistence() {
-        savedMerchant();
+        savedSample();
         assertTrue(service.exists("M12"));
     }
 
-    @Test public void testFindAll() {
-        Merchant model = savedMerchant();
-        List list = service.findAll();
-        assertFalse( list.isEmpty() );
-        assertTrue( list.contains( model ) );
+    @Test
+    public void testFindAllSpecific() {
+        Merchant model = savedSample();
+        List<Merchant> list = service.findAll();
+        assertFalse(list.isEmpty());
+        assertTrue(list.contains(model));
     }
 }

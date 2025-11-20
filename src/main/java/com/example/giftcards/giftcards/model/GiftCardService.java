@@ -8,33 +8,9 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 @Service
-public class GiftCardService {
-    @Autowired private GiftCardRepository repository;
-
-    @Transactional(readOnly = true)
-    public List<GiftCard> findAll() {
-        return StreamSupport.stream(repository.findAll().spliterator(), false).toList();
-    }
-
-    @Transactional(readOnly = true)
-    public GiftCard getById(String id) {
-        return repository.findById(id).orElseThrow(() -> new RuntimeException(GiftCard.InvalidCard));
-    }
-
-    @Transactional
-    public GiftCard save(GiftCard giftCard) {
-        return repository.save(giftCard);
-    }
-
+public class GiftCardService extends ModelService< GiftCard, String, GiftCardRepository >{
     @Transactional
     public void deleteById(String id) {
         repository.deleteById(id);
     }
-
-    @Transactional
-    public void delete(GiftCard card) {
-        repository.delete(card);
-    }
-
-
 }

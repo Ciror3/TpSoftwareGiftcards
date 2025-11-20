@@ -34,9 +34,12 @@ public class GiftCardFacade {
         return token;
     }
 
-    public void redeem( UUID token, String cardId ) {
+    public void redeem(UUID token, String cardId) {
         GiftCard card = giftCardService.getById(cardId);
-        card.redeem( findUser( token ));
+        String username = findUser(token);
+        UserVault user = userService.findByName(username);
+        card.redeem(user);
+
         giftCardService.save(card);
     }
 
@@ -58,7 +61,7 @@ public class GiftCardFacade {
 
     private GiftCard ownedCard( UUID token, String cardId ) {
         GiftCard card = giftCardService.getById( cardId );
-        if ( !card.isOwnedBy( findUser( token ) ) ) throw new RuntimeException( InvalidToken );
+        if ( !card.isOwnedBy(userService.findByName(findUser( token )) ) ) throw new RuntimeException( InvalidToken );
         return card;
     }
 

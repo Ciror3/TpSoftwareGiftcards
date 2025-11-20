@@ -25,7 +25,8 @@ public class GiftCardTest {
 
     @Test public void chargeACard() {
         GiftCard aCard = newCard();
-        aCard.redeem( "Bob" );
+        UserVault bob = new UserVault("Bob", "password123");
+        aCard.redeem( bob );
         aCard.charge( 2, "Un cargo" );
         assertEquals( 8, aCard.balance() );
         assertEquals( "Un cargo", aCard.charges().getLast() );
